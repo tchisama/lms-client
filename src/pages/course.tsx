@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect } from "react"
 import Navbar from "../components/global/navbar";
 import {
   Accordion,
@@ -20,33 +20,55 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
   } from "../components/ui/alert-dialog"
+import useCourseStore from "../../hooks/store";
+import { useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
+import { useClerk } from "@clerk/clerk-react";
+import { ArrowRight, StarsIcon } from "lucide-react";
 
 function Course() {
     const [info,setInfo]=React.useState(true)
+    const {course_id ,section_id, video_id} = useParams()
+    const navigate = useNavigate()
+    const {user} = useClerk()
+    
+    if(!user){
+      return(<div className="flex h-screen justify-center items-center">loading...</div>)
+    }
+
+    useEffect(()=>{
+     if(!user){
+        navigate("/sign-in")
+     }
+    },[user])
+
+    const {selectedCourse,setSelectedCourse}=useCourseStore();
+
+    useEffect(()=>{
+      const getCourse = ()=>{
+        axios.get("https://the-flow.studio/demo/lms/api/course-"+course_id).then((response)=>{
+          setSelectedCourse(response.data)
+          console.log(response.data)
+        })
+      }
+
+      return()=>{
+        getCourse()
+      }
+    },[course_id])
+
+
   return (
     <div className="mb-8">
       <Navbar></Navbar>
       <div className="container mx-auto grid grid-cols-7 pt-8 gap-10 text-gray-700">
         <div className="col-span-5">
             {
-                info?
+                video_id=="info"?
                 <>
-                        <img className="w-full rounded-xl" src="https://media.geeksforgeeks.org/wp-content/cdn-uploads/20200214165928/Web-Development-Course-Thumbnail.jpg"></img>
-                        <h1 className="text-5xl font-bold my-4">Course design </h1>
-                        <h3 className="text-xl font-semibold">what you going to learn</h3>
-                        <ul className="list-disc ml-4 py-2">
-                            <li>photoshop</li>
-                            <li>design</li>
-                            <li>illustrator</li>
-                            <li>coloring</li>
-                            <li>images</li>
-                            <li>and more</li>
-                        </ul>
-                        <hr  className="max-w-2xl my-4"/>
-                        <h3 className="text-xl font-semibold">description</h3>
-                        <p className="py-2 max-w-2xl">Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit, assumenda officiis. Incidunt beatae perspiciatis, quis doloribus, corrupti veritatis perferendis, atque fugiat optio autem officia commodi labore nemo facilis velit animi!Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit, assumenda officiis. Incidunt beatae perspiciatis, quis doloribus, corrupti veritatis perferendis, atque fugiat optio autem officia commodi labore nemo facilis velit animi!</p>
-                        <h3 className="text-xl font-semibold">some more stuff</h3>
-                        <p className="py-2 max-w-2xl">Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit, assumenda officiis. Incidunt beatae perspiciatis, quis doloribus, corrupti veritatis perferendis, atque fugiat optio autem officia commodi labore nemo facilis velit animi!Lorem ipsum dolor sit amet consectetur adipisicing elit. Velit, assumenda officiis. Incidunt beatae perspiciatis, quis doloribus, corrupti veritatis perferendis, atque fugiat optio autem officia commodi labore nemo facilis velit animi!</p>
+                        <img className="w-full rounded-xl" src={"https://the-flow.studio/demo/lms/"+selectedCourse?.thumbnail}></img>
+                        <h1 className="text-5xl font-bold my-4">{selectedCourse?.title}</h1>
+                        <h3 className="text-xl font-semibold">{selectedCourse?.description}</h3>
                 </>
                 :
                 <>
@@ -57,7 +79,7 @@ function Course() {
                             <h1 className="text-2xl font-bold my-4">Course design </h1>
                             <Button size={"icon"} variant={"outline"}><BiFullscreen/></Button>
                         </div>
-                        <iframe className="w-full aspect-video" src="https://www.youtube.com/embed/Ib8UBwu3yGA?si=lND6T2S_xnVFQdxL" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" ></iframe>
+                        <iframe className="w-full aspect-video" src={selectedCourse?.sections[Number(section_id)].videos[Number(video_id)]?.url} title="YouTube video player" ></iframe>
                         <div className="flex gap-2 mt-4 w-full">
                             <Button variant={"outline"} className="flex gap-2"><BiLeftArrowAlt/> Previous</Button>
                             <Button variant={"outline"} className="flex gap-2">Next <BiRightArrowAlt/></Button>
@@ -69,27 +91,67 @@ function Course() {
             <div className="flex gap-2 items-center">
                 <img className="w-12 h-12 rounded-lg" src="https://avatars.githubusercontent.com/u/134111504?s=200&v=4"></img>
                 <div>
-                    <h1 className="text-xl">Course Title</h1>
+                    <h1 className="text-xl">{selectedCourse?.title}</h1>
                     <h3 className="text-md text-gray-500">Name of the teacher</h3>
                 </div>
             </div>
-            <div className="py-4 space-x-2">
-                <Button>Buy now for 30$</Button>
-                <Button variant={"outline"} onClick={()=>setInfo(true)}>learn more</Button>
+            <div className="py-4 flex gap-2">
+                <Button className="w-28 relative overflow-hidden group">
+                  <span className="flex gap-2 w-28 absolute left-0 justify-center items-center group-hover:-left-28 duration-200">Buy now <StarsIcon size={17}/></span>
+                  <span className="flex gap-2 w-28 absolute justify-center items-center -right-28  group-hover:right-0 duration-200">For 30$ <ArrowRight size={17}/></span>
+                </Button>
+                <Button variant={"outline"} onClick={()=>navigate("/course/"+course_id+"/0/info")}>learn more</Button>
             </div>
-            <h3 className="mt-3 text-md ">5 videos ( 6 hours )</h3>
             <h2 className="mt-6 text-xl font-semibold ">Course sections</h2>
-          <Accordion type="single" collapsible defaultValue="item-1">
-            <AccordionItem value="item-1" >
-              <AccordionTrigger>introduction</AccordionTrigger>
-              <AccordionContent>
-                <div onClick={()=>setInfo(false)} className="flex gap-2 items-center hover:bg-gray-50 p-1 rounded-lg bg-transparent duration-150 cursor-pointer">
-                    <div className="w-8 h-8 bg-green-100 border border-green-200 rounded-md flex justify-center items-center text-xl text-green-600"><BsPlay/> </div>
-                    <span className="text-md">the video title here</span>
-                </div>
-                {
-                    new Array(8).fill("").map(()=>(
-                         <AlertDialog>
+
+
+
+          <Accordion type="single" collapsible defaultValue="section-0">
+
+
+
+            {
+              selectedCourse?.sections.map((section,i)=>{
+                return(
+                    <AccordionItem key={i} value={"section-"+i} >
+                      <AccordionTrigger>{section.title}</AccordionTrigger>
+                      <AccordionContent>
+
+                        {
+                          section.videos.map((video,a)=>{
+                            return(
+                                <div key={a} onClick={()=>navigate("/course/"+course_id+"/"+i+"/"+a)} className="flex gap-2 items-center hover:bg-gray-50 p-1 rounded-lg bg-transparent duration-150 cursor-pointer">
+                                    <div className="w-8 h-8 bg-green-100 border border-green-200 rounded-md flex justify-center items-center text-xl text-green-600"><BsPlay/> </div>
+                                    <span className="text-md">{video.title}</span>
+                                </div>
+                            )
+                          })
+                        }
+
+                      </AccordionContent>
+                    </AccordionItem>
+                )
+              })
+            }
+
+            
+
+          </Accordion>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default Course;
+
+
+
+
+
+                /* {
+                    new Array(8).fill("").map((a,b)=>(
+                         <AlertDialog key={b}>
                          <AlertDialogTrigger asChild>
                                 <div className="flex gap-2 items-center hover:bg-gray-50 p-1 rounded-lg bg-transparent duration-150 cursor-pointer">
                                     <div className="w-8 h-8 bg-gray-200 rounded-md flex justify-center items-center text-xl text-gray-500"><BiLockAlt/> </div>
@@ -110,40 +172,4 @@ function Course() {
                          </AlertDialogContent>
                        </AlertDialog>
                     ))
-                }
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-2">
-              <AccordionTrigger>photoshop</AccordionTrigger>
-              <AccordionContent>
-                {
-                    new Array(8).fill("").map(()=>(
-                        <div className="flex gap-2 items-center hover:bg-gray-50 p-1 rounded-lg bg-transparent duration-150 cursor-pointer">
-                            <div className="w-8 h-8 bg-gray-200 rounded-md flex justify-center items-center text-xl text-gray-500"><BiLockAlt/> </div>
-                            <span className="text-md">the video title here</span>
-                        </div>
-                    ))
-                }
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-3">
-              <AccordionTrigger>illustrator</AccordionTrigger>
-              <AccordionContent>
-                {
-                    new Array(8).fill("").map(()=>(
-                        <div className="flex gap-2 items-center hover:bg-gray-50 p-1 rounded-lg bg-transparent duration-150 cursor-pointer">
-                            <div className="w-8 h-8 bg-gray-200 rounded-md flex justify-center items-center text-xl text-gray-500"><BiLockAlt/> </div>
-                            <span className="text-md">the video title here</span>
-                        </div>
-                    ))
-                }
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default Course;
+                } */

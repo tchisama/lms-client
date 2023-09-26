@@ -1,6 +1,7 @@
 import { UserButton, useAuth } from '@clerk/clerk-react'
 import { Button } from '../ui/button'
 import { useNavigate } from "react-router-dom";
+import { LogIn } from 'lucide-react';
 
 function Navbar() {
     const auth = useAuth()
@@ -22,7 +23,7 @@ function Navbar() {
                 auth.isSignedIn ?
                     <UserButton afterSignOutUrl='/'/>
                     :
-                    <Button onClick={()=>navigate("/sign-in")}>Login</Button>
+                    <Button className='flex gap-2' onClick={()=>navigate("/sign-in")}>Login <LogIn size={16}/></Button>
             }
             </div>
         </div>
