@@ -2,14 +2,9 @@ import { ArrowRight } from "lucide-react";
 import Navbar from "../components/global/navbar"
 import { Button } from "../components/ui/button"
 import { useNavigate } from "react-router-dom";
-import { useClerk } from "@clerk/clerk-react";
 
 function Homepage() {
     const navigate = useNavigate()
-    const {user}=useClerk()
-    if(!user){
-      return(<div className="flex h-screen justify-center items-center">loading...</div>)
-    }
   return (
     <div className="text-gray-800">
         <Navbar/>

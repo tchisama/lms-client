@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import { useEffect } from "react"
 import Navbar from "../components/global/navbar";
 import {
   Accordion,
@@ -7,40 +7,16 @@ import {
   AccordionTrigger,
 } from "../components/ui/accordion";
 import {BsPlay } from "react-icons/bs"
-import {BiLockAlt,BiFullscreen ,BiLeftArrowAlt,BiRightArrowAlt } from "react-icons/bi"
+import {BiFullscreen ,BiLeftArrowAlt,BiRightArrowAlt } from "react-icons/bi"
 import { Button } from "../components/ui/button";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-  } from "../components/ui/alert-dialog"
 import useCourseStore from "../../hooks/store";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-import { useClerk } from "@clerk/clerk-react";
 import { ArrowRight, StarsIcon } from "lucide-react";
 
 function Course() {
-    const [info,setInfo]=React.useState(true)
     const {course_id ,section_id, video_id} = useParams()
     const navigate = useNavigate()
-    const {user} = useClerk()
-    
-    if(!user){
-      return(<div className="flex h-screen justify-center items-center">loading...</div>)
-    }
-
-    useEffect(()=>{
-     if(!user){
-        navigate("/sign-in")
-     }
-    },[user])
 
     const {selectedCourse,setSelectedCourse}=useCourseStore();
 
@@ -49,6 +25,8 @@ function Course() {
         axios.get("https://the-flow.studio/demo/lms/api/course-"+course_id).then((response)=>{
           setSelectedCourse(response.data)
           console.log(response.data)
+        }).catch((error)=>{
+          console.log(error);
         })
       }
 

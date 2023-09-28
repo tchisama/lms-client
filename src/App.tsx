@@ -29,6 +29,8 @@ function ClerkProviderWithRoutes() {
       axios.get("https://the-flow.studio/demo/lms/api/home-courses").then((response)=>{
         setCourses(response.data)
         console.log(response.data)
+      }).catch((error)=>{
+        console.log(error);
       })
     }
     return () => {
